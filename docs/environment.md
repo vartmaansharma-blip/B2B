@@ -29,7 +29,7 @@ Without valid configuration, staff routes redirect to `/setup` and login display
 
 ## Hosted staging setup (separate operator step)
 
-No hosted project is created, linked, migrated or deployed by this PR. When a private staging project has been explicitly chosen:
+The application does not automatically create, link, migrate, or deploy a hosted project. The separately authorized staging setup is recorded in [verification](verification.md#authorized-staging-follow-up--28-october-2026-ist). For each new private staging project:
 
 1. Review this migration and approve the exact project before applying it. Ensure backups and a rollback/recovery plan appropriate to that environment.
 2. Inspect CLI help, link the exact staging project, review migration status, then apply the committed migrations. Verify tables, indexes, policies, grants, triggers and advisors on that project. Keep `private` out of exposed API schemas. Never run these operations against an inferred or unrelated project.
@@ -60,6 +60,8 @@ values ('<organization uuid>','<invited auth user uuid>','operator');
 ## Invite and recovery email templates
 
 The `/auth/confirm` route accepts a token hash with `type=invite` or `type=recovery`, verifies it with Supabase and redirects to `/set-password`. It accepts no arbitrary destination.
+
+The current Supabase Free dashboard requires custom SMTP or a plan upgrade to customize these templates. Do not send the default invitation as if it supports this server-side token-hash flow. Configure email delivery/templates first. For a one-person staging workspace, an operator can alternatively create the initial Auth account in the trusted dashboard, with the owner entering their password directly, then provision membership out of band. Never put that password in chat, SQL, scripts, or the repository. Invite/recovery testing remains required before wider staff rollout.
 
 Configure the Supabase **Invite user** email template link as:
 
