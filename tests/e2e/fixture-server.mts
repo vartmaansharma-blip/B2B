@@ -7,6 +7,7 @@ const users: Record<string, string> = {
   "operator@fixture.test": ids.operator,
   "engineer@fixture.test": ids.engineer,
   "outsider@fixture.test": ids.outsider,
+  "recovery@fixture.test": ids.other,
 };
 const user = (id: string) => ({
   id,

@@ -56,6 +56,90 @@ test("invalid credentials return a generic error", async ({ page }) => {
     page.getByRole("alert").filter({ hasText: "Unable to sign in" }),
   ).toBeVisible();
 });
+
+test("default recovery email sessions reach password setup and keep tokens out of URLs and storage", async ({
+  page,
+  request,
+}) => {
+  const response = await request.post(
+    "http://127.0.0.1:54329/auth/v1/token?grant_type=password",
+    {
+      data: {
+        email: "recovery@fixture.test",
+        password: "Fixture-password-only-2026",
+      },
+    },
+  );
+  const session = await response.json();
+  const fragment = new URLSearchParams({
+    type: "recovery",
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+  });
+  await page.goto(`/auth/recovery#${fragment}`);
+  await expect(page).toHaveURL("http://127.0.0.1:3100/set-password");
+  await expect(
+    page.getByRole("heading", { name: "Set your staff password" }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(() =>
+      Object.values(localStorage)
+        .concat(Object.values(sessionStorage))
+        .some((value) => value.includes("fixture-refresh-only")),
+    ),
+  ).toBe(false);
+  await page
+    .getByLabel("New password (12 characters minimum)")
+    .fill("TEST-ONLY-reset-password-2026");
+  await page
+    .getByLabel("Confirm password", { exact: true })
+    .fill("TEST-ONLY-reset-password-2026");
+  await page.getByRole("button", { name: "Set password", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Operations overview." }),
+  ).toBeVisible();
+});
+
+test("invalid recovery links remove fragments and give a safe retry path", async ({
+  page,
+}) => {
+  await page.goto(
+    "/auth/recovery#type=recovery&access_token=TEST_ONLY_INVALID&refresh_token=TEST_ONLY_INVALID",
+  );
+  await expect(
+    page.getByRole("alert", { name: "Password reset feedback" }),
+  ).toContainText("invalid or expired");
+  await expect(page).toHaveURL("http://127.0.0.1:3100/auth/recovery");
+  await page.getByRole("link", { name: "Return to sign in" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test("a valid recovery session cannot bypass staff membership", async ({
+  page,
+  request,
+}) => {
+  const response = await request.post(
+    "http://127.0.0.1:54329/auth/v1/token?grant_type=password",
+    {
+      data: {
+        email: "outsider@fixture.test",
+        password: "Fixture-password-only-2026",
+      },
+    },
+  );
+  const session = await response.json();
+  const fragment = new URLSearchParams({
+    type: "recovery",
+    access_token: session.access_token,
+    refresh_token: session.refresh_token,
+  });
+  await page.goto(`/auth/recovery#${fragment}`);
+  await expect(
+    page.getByRole("alert", { name: "Password reset feedback" }),
+  ).toContainText("invalid or expired");
+  await page.goto("/set-password");
+  await expect(page).toHaveURL(/\/login$/);
+});
 test("staff can record discovery and provenance, review and sign out", async ({
   page,
 }, info) => {

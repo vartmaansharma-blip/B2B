@@ -61,7 +61,7 @@ values ('<organization uuid>','<invited auth user uuid>','operator');
 
 The `/auth/confirm` route accepts a token hash with `type=invite` or `type=recovery`, verifies it with Supabase and redirects to `/set-password`. It accepts no arbitrary destination.
 
-The current Supabase Free dashboard requires custom SMTP or a plan upgrade to customize these templates. Do not send the default invitation as if it supports this server-side token-hash flow. Configure email delivery/templates first. For a one-person staging workspace, an operator can alternatively create the initial Auth account in the trusted dashboard, with the owner entering their password directly, then provision membership out of band. Never put that password in chat, SQL, scripts, or the repository. Invite/recovery testing remains required before wider staff rollout.
+The current Supabase Free dashboard requires custom SMTP or a plan upgrade to customize these templates. Do not send the default invitation as if it supports this server-side token-hash flow. Configure email delivery/templates first for invitations. For a one-person staging workspace, an operator can alternatively create the initial Auth account in the trusted dashboard, with the owner entering their password directly, then provision membership out of band. Never put that password in chat, SQL, scripts, or the repository. Invite/recovery testing remains required before wider staff rollout.
 
 Configure the Supabase **Invite user** email template link as:
 
@@ -71,7 +71,15 @@ Configure the Supabase **Invite user** email template link as:
 >
 ```
 
-Configure the **Reset password** template similarly with `type=recovery`. An administrator initiates recovery through the trusted Auth dashboard/admin interface; V0 does not provide public recovery email submission. The member must still have active workspace access to set a password. Expired/invalid tokens return a generic login message.
+For custom email delivery, configure the **Reset password** template similarly with `type=recovery`.
+
+### Default recovery emails without custom SMTP
+
+`/auth/recovery` supports Supabase's default implicit-flow **recovery** link. Add the exact HTTPS callback URL to the Auth redirect allowlist. A trusted operator can initiate `resetPasswordForEmail` using the public client and that exact `redirectTo`, or send the equivalent Auth `/recover` request with `redirect_to`. Do not use a PKCE client from an unrelated operator machine: its verifier would not be present in the user's browser. No secret/service-role key is needed for the recovery request. The default email service has recipient and rate limits; configure custom delivery before wider staff rollout.
+
+Open the staging site in the same browser first and complete Vercel authentication before opening a recovery email. Keep deployment protection enabled. The callback extracts only recovery credentials, immediately removes the URL fragment, and sends the bounded credentials in a same-origin Next.js server action. Supabase validates the session and user; active database membership is checked before password setup is permitted. Credentials stay out of local/session storage, query strings, logs and repository files. Missing/expired links and nonstaff sessions return a generic error and clear the local session. The `type=recovery` marker alone never authorizes a password change. The password action independently verifies staff access again.
+
+Only the account owner enters and submits the new password. V0 does not provide public recovery email submission. The member must still have active workspace access to set a password. Expired/invalid tokens return a generic login message.
 
 Token hashes and passwords are secrets. Do not log auth query strings, request bodies, cookies or full URLs in application/proxy observability. Supabase handles rate limiting of authentication requests; use appropriate hosted settings and upstream protection for an internet-accessible deployment.
 
