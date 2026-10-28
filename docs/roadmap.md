@@ -4,7 +4,9 @@
 
 Implemented in the feature PR: one modular application; staff authentication and invitations/recovery; tenant-aware schema and RLS; supplier provenance and qualification review; customer/RFQ intake and engineering decisions; audit ledger; responsive staff UI; validation, version protection, pagination; local tests and CI.
 
-Pending environment acceptance: select and approve a staging Supabase project, configure Auth/email, apply and inspect migrations, regenerate types against local Supabase, run advisors, validate real Auth/PostgREST flows and review the staging UI. Code review/merge and deployment are separate steps. No supplier or business hypothesis has been validated by this build.
+Current verified status: V0 remains in open draft PR #1, unmerged. A dedicated Supabase staging project has the V0 migration applied, and a protected Vercel staging deployment matches the latest V0 head. One staff account exists; business registers are empty. Read the dated current audit in [verification](verification.md) for exact SHAs, live RLS/grant/Auth results, advisor warnings and remaining authenticated acceptance. Code review/merge and production deployment are separate steps. No supplier or business hypothesis has been validated by this build.
+
+Next implemented change, pending PR review and staging acceptance: drawing-reference/revision approval gates and reasoned RFQ amendments with immutable requirement snapshots, optimistic concurrency and automatic approval invalidation. Its forward migration and application are not deployed. A revision reference does not provide controlled document storage.
 
 ## Next: learn from a narrow real workflow
 
@@ -12,7 +14,7 @@ Choose one part category and one manufacturing cluster with accountable human en
 
 ## Extend only when the operating need is clear
 
-1. Correct/update business records with history and explicit reasons; supplier contacts with private-data controls.
+1. Extend the implemented RFQ amendment/history pattern to supplier/customer corrections; supplier contacts with private-data controls.
 2. Controlled document storage and drawing revisions with scoped authorization and retention rules.
 3. Part-specific supplier shortlists, quote records and comparable engineering/commercial assumptions.
 4. Inspection plans, independent acceptance evidence and explicit human production approval gates.

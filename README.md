@@ -2,14 +2,15 @@
 
 Private operating software for an engineering-led manufacturing and supplier network in India.
 
-**Phase: V0 implementation, pending review and environment setup.** The business opportunity and initial product category remain hypotheses. This code does not establish supplier qualifications, customer demand, purchase orders, or delivery commitments.
+**Phase: V0 draft PR and protected staging; drawing-control follow-up pending review and staging acceptance.** The business opportunity and initial product category remain hypotheses. This code does not establish supplier qualifications, customer demand, purchase orders, or delivery commitments.
 
 ## V0
 
 - Invite-only Supabase staff sign-in and password setup/recovery
 - Organization-scoped supplier registry with discovery provenance, reported processes and materials
 - Qualification stages with engineering-only approval, scope, evidence, expiry, and immutable review history
-- Customer business records, RFQ requirements, engineering review, and sourcing workflow
+- Customer business records, RFQ requirements, controlled drawing identity, engineering review, and sourcing workflow
+- Reasoned RFQ amendments with before/after history and automatic approval invalidation
 - Server-side access checks plus database RLS, grants, tenant-safe foreign keys and workflow triggers
 - Desktop/mobile screens, quick find with keyboard navigation, copyable record references, loading states and accessible feedback
 - Cinematic sign-in art, animated engineering linework, page transitions and persistent reduced-motion controls
@@ -44,4 +45,4 @@ Database tests execute the migrations under PostgreSQL roles in PGlite. Browser 
 - Discovery is not qualification. AI cannot approve a manufacturer's capabilities.
 - V0 has no production-commitment, payment, purchase-order, customer portal or document-upload feature.
 
-No hosted project is provisioned or migrated by this repository. Merge and deployment are separate reviewed steps.
+The repository does not automatically provision, migrate or deploy hosted services. V0 was separately staged; see the dated [verification record](docs/verification.md) for exact code, database and deployment evidence. Merge, migration application and deployment are separate reviewed steps.

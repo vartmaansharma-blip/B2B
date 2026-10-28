@@ -31,12 +31,16 @@ Without valid configuration, staff routes redirect to `/setup` and login display
 
 The application does not automatically create, link, migrate, or deploy a hosted project. The separately authorized staging setup is recorded in [verification](verification.md#authorized-staging-follow-up--28-october-2026-ist). For each new private staging project:
 
-1. Review this migration and approve the exact project before applying it. Ensure backups and a rollback/recovery plan appropriate to that environment.
+1. Review all pending migrations and approve the exact project before applying them. Ensure backups and a rollback/recovery plan appropriate to that environment.
 2. Inspect CLI help, link the exact staging project, review migration status, then apply the committed migrations. Verify tables, indexes, policies, grants, triggers and advisors on that project. Keep `private` out of exposed API schemas. Never run these operations against an inferred or unrelated project.
 3. Set Auth public sign-up and anonymous sign-in **off** in hosted settings. Configure a 12-character minimum password, appropriate provider rate limits and email delivery. Configure the exact staging site URL and redirect allowlist, without wildcards. Enable leaked-password protection where available; MFA enforcement is a future security enhancement.
 4. Set only the project URL and publishable key in the app environment. The app does not need a secret/service-role key or a database password.
 5. Use HTTPS. Production-mode session cookies are Secure, HttpOnly and SameSite=Lax. All auth and staff responses must remain private/no-store at any CDN or reverse proxy.
 6. Provision test staff in the intended organization, then perform the integration checks in `verification.md` before allowing real business records.
+
+## Drawing-control migration rollout
+
+The new `20261028023900_rfq_drawing_revisions.sql` migration must follow V0 and precede deployment of the amendment UI. It is not applied by the app. Recheck migration history and existing approvals before applying it to the explicitly authorized staging project. An older approved RFQ has no structured revision: the constraint intentionally stops the migration rather than guessing a revision or silently changing approval history. Have an accountable engineer first return those records to reviewing/pending under the old workflow. After migration, staff can add exact drawing references/revisions with an amendment and request a fresh engineering decision. Verify the new schema and regenerate types before deploying the reviewed application. Keep the updated application out of a V0-only database: writes to new columns will fail. Do not drop the new columns to roll back an application deployment; preserve audit history and use an additive repair if needed.
 
 ## First organization and staff
 
