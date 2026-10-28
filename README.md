@@ -2,7 +2,7 @@
 
 Private operating software for an engineering-led manufacturing and supplier network in India.
 
-**Phase: V0 draft PR and protected staging; drawing-control follow-up pending review and staging acceptance.** The business opportunity and initial product category remain hypotheses. This code does not establish supplier qualifications, customer demand, purchase orders, or delivery commitments.
+**Phase: V0 and drawing control merged; capability/shortlist work continues on `feat/procurement-shortlists`.** This branch is the working/publishing source; `main` remains separate. Hosted migration and deployment status are recorded separately in [verification](docs/verification.md). The business opportunity and initial product category remain hypotheses. This code does not establish supplier qualifications, customer demand, purchase orders, or delivery commitments.
 
 ## V0
 
@@ -11,6 +11,8 @@ Private operating software for an engineering-led manufacturing and supplier net
 - Qualification stages with engineering-only approval, scope, evidence, expiry, and immutable review history
 - Customer business records, RFQ requirements, controlled drawing identity, engineering review, and sourcing workflow
 - Reasoned RFQ amendments with before/after history and automatic approval invalidation
+- Dated, append-only capability observations with process, material, tolerance, inspection and evidence
+- RFQ supplier proposals, engineering fit acceptance, immutable decision snapshots and live validity checks
 - Server-side access checks plus database RLS, grants, tenant-safe foreign keys and workflow triggers
 - Desktop/mobile screens, quick find with keyboard navigation, copyable record references, loading states and accessible feedback
 - Cinematic sign-in art, animated engineering linework, page transitions and persistent reduced-motion controls

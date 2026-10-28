@@ -52,6 +52,7 @@ export type Rfq = {
   drawing_reference: string | null;
   drawing_revision: string | null;
   amendment_note: string | null;
+  requirements_version: number;
   quantity: number;
   unit: string;
   target_date: string | null;
@@ -94,6 +95,52 @@ type Table<Row, Required extends keyof Row = never> = {
   Update: Partial<Row>;
   Relationships: [];
 };
+export type SupplierCapability = {
+  id: string;
+  organization_id: string;
+  supplier_id: string;
+  process: string;
+  material: string;
+  tolerance_notes: string;
+  inspection_notes: string;
+  evidence_reference: string;
+  observed_on: string;
+  created_by: string;
+  created_at: string;
+};
+export type RfqShortlist = {
+  id: string;
+  organization_id: string;
+  rfq_id: string;
+  supplier_id: string;
+  capability_id: string;
+  requirements_version: number;
+  supplier_version: number;
+  state: string;
+  review_note: string;
+  fit_evidence_reference: string | null;
+  requirements_snapshot: Json;
+  supplier_snapshot: Json;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  rfq_reviewed_at: string | null;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  version: number;
+};
+export type ShortlistEvent = {
+  id: string;
+  organization_id: string;
+  rfq_id: string;
+  shortlist_id: string;
+  from_state: string | null;
+  to_state: string;
+  note: string;
+  snapshot: Json;
+  actor_id: string;
+  created_at: string;
+};
 export type Database = {
   public: {
     Tables: {
@@ -133,8 +180,35 @@ export type Database = {
         | "unit"
       >;
       review_events: Table<ReviewEvent>;
+      supplier_capabilities: Table<
+        SupplierCapability,
+        | "organization_id"
+        | "supplier_id"
+        | "process"
+        | "material"
+        | "tolerance_notes"
+        | "inspection_notes"
+        | "evidence_reference"
+        | "observed_on"
+      >;
+      rfq_shortlists: Table<
+        RfqShortlist,
+        | "organization_id"
+        | "rfq_id"
+        | "supplier_id"
+        | "capability_id"
+        | "requirements_version"
+        | "supplier_version"
+        | "review_note"
+      >;
+      shortlist_events: Table<ShortlistEvent>;
     };
-    Views: { [_ in never]: never };
+    Views: {
+      rfq_shortlist_status: {
+        Row: RfqShortlist & { effective_state: string };
+        Relationships: [];
+      };
+    };
     Functions: { [_ in never]: never };
     Enums: {
       staff_role: Role;

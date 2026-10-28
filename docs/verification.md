@@ -2,7 +2,35 @@
 
 Local evidence, 28 October 2026 (IST). This is implementation verification, not supplier validation or release authorization.
 
-## Current audit and RFQ drawing-control follow-up — 28 October 2026 (IST)
+## Current branch audit and procurement foundations — 28 October 2026 (IST)
+
+This section supersedes the repository/release status in the historical sections below. The referenced conversation's assistant answers were unavailable as plain text, so the implementation audit uses current source, GitHub and service inspection instead of inferred promises.
+
+### Verified baseline
+
+- Fetched GitHub `main` is `dd26b88aa7f5d9dea3d1d3407d045bd8fbdbc981`; PR #1 and PR #2 are merged. Existing remote branches are `main`, `feat/manufacturing-os-v0` and `feat/rfq-drawing-revisions`. The prior drawing-control [CI run 40623552615](https://github.com/vartmaansharma-blip/B2B/actions/runs/40623552615) is completed/success on its exact head; that is historical baseline evidence, not verification of this new branch.
+- Implemented already: modular Next.js staff app, server-verified Auth/membership, one organization per account, organization RLS and explicit grants, supplier discovery/qualification/evidence/expiry, customers and RFQs, engineering approval, drawing-controlled amendments, immutable review history, optimistic versions, browser fixtures and pinned CI. These foundations were inspected and extended rather than rebuilt.
+- Actual gaps at inspection: supplier capabilities were free text only; no RFQ-to-supplier relation, fit review, shortlist audit or live acceptance validity existed. Also missing: controlled file storage, commercial quotations, production release, public onboarding, MFA enforcement, full hosted role/workflow acceptance and complete generated types from the pending schema. Those are not claimed by this change.
+- Read-only hosted migration history for `b2b-staging` (`ywciamahpwefiuihlynw`) returned **only `20261027182029_manufacturing_os_v0`**. Neither the merged drawing-control migration nor this branch's new migration was installed at that inspection.
+- Vercel project `b2b-manufacturing-os` (`prj_nxsbrEbwvm4vLKJyHBkYaQX8rEjS`, team `team_O7yqJx3Vax88HglyAbyQMuZZ`) reported the earlier staging deployment `dpl_H7oKBAyzB7d3TVhTcNThcGzkppvs` READY, with sign-in protection enabled for deployment URLs and all previews. The existing review deployment is independent of current GitHub `main`.
+
+### Implemented on the working branch
+
+`feat/procurement-shortlists` is the user-designated working and publishing branch; do not merge or change GitHub's default branch. Additive migration `20261028115224_procurement_shortlists.sql` follows drawing control. It adds append-only source-backed process/material/tolerance/inspection observations, RFQ/supplier/capability relations, a requirements-only revision counter, proposal/acceptance/removal decisions, immutable exact snapshots, and a caller-RLS live-status view. Nine exposed tables have RLS; the view explicitly uses `security_invoker=true`. No confidential business data, credentials or real supplier qualifications were added.
+
+Engineers/admins must accept fit separately against current qualification, requirement revision and RFQ approval with evidence. Stale parent decisions fail in the database; accepting locks parent rows while validating/snapshotting. The application reads the live-status view, so supplier changes/suspension/expiry, amended requirements, changed engineering approval and RFQ closure do not display historical acceptance as current. Reproposals clear review attribution and require a fresh acceptance. Scope matching is accountable human review, not an automatic engineering claim. Closure blocks use while closed; reopening an unchanged still-current decision can restore its validity. No new production/PO/communication workflow is added.
+
+Supplier detail links to its paginated capability register. RFQ detail links to paginated shortlist entries and unranked process/material observation search. Review forms bind organization, RFQ and loaded entry version. History renders validated requirement/capability/qualification/fit evidence snapshots, with 50 latest events visible. Existing feature boundaries and shared form controls are preserved.
+
+### Validation and remaining release steps
+
+Local `npm run check` passed on supported Node **24.22.1**: formatting, zero-warning lint, strict TypeScript, **127 unit/action/PostgreSQL tests**, and optimized production build. New SQL tests cover role/tenant boundaries, anonymous-auth denial, append-only observations, server-stamped actors/snapshots, missing qualification/evidence/approval, stale parent/entry updates, scope changes, closure, change-and-revert requirement counters, historical-event immutability and a forward upgrade preserving existing RFQs. Database tests execute migration SQL with real PostgreSQL roles in PGlite and an Auth stub. Browser validation is recorded below after completion; it uses the isolated protocol fixture, not hosted Supabase.
+
+All **24 desktop/mobile Chromium checks** passed against that production build. New browser coverage follows reported observation -> unqualified proposal -> denied acceptance -> supplier qualification -> reproposal -> engineering acceptance -> drawing amendment -> stale page denial -> reproposal -> renewed acceptance denial until RFQ approval, and verifies retained revision-A fit evidence. Screenshots were inspected on desktop/mobile; no page errors or horizontal overflow occurred. All records are visibly synthetic and local. A final cache-invalidation adjustment explicitly revalidates the capability register; its browser check also verifies the observation appears immediately after saving.
+
+Hosted migrations, schema advisors, full type regeneration, actual Auth/PostgREST acceptance and branch publishing remain separate release gates. The new contract is schema-aligned but manually maintained. No Docker-compatible runtime is present for a full local stack. Until approved migration application, the existing hosted V0 database cannot serve the new branch's drawing-revision/shortlist workflow. The app does not migrate on startup. See [migration rollout](environment.md#capability-and-shortlist-migration-rollout) for exact ordering, verification and recovery. Keep business data out until real role/session and end-to-end acceptance passes.
+
+## Historical audit and RFQ drawing-control follow-up — 28 October 2026 (IST)
 
 This section supersedes earlier pending-setup/sign-in statements below; those sections remain as historical evidence. No hosted database writes, merge, or deployment were performed during this follow-up.
 
