@@ -23,13 +23,16 @@ export function QuickFind() {
     setOpen(true);
     input.current?.focus();
   }
-  function close() {
-    dialog.current?.close();
+  function reset() {
     setOpen(false);
     setPending(false);
     setQuery("");
     setResults([]);
     setError("");
+  }
+  function close() {
+    dialog.current?.close();
+    reset();
   }
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -89,7 +92,10 @@ export function QuickFind() {
       <dialog
         ref={dialog}
         className="search-dialog"
-        onClose={close}
+        onClose={() => {
+          // A queued close event may arrive after the shortcut reopens it.
+          if (!dialog.current?.open) reset();
+        }}
         aria-label="Quick find workspace records"
         onClick={(event) => {
           if (event.target === dialog.current) close();

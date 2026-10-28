@@ -6,6 +6,7 @@ const { requireStaff, client, chain, revalidatePath } = vi.hoisted(() => {
     eq: vi.fn(),
     select: vi.fn(),
     single: vi.fn(),
+    maybeSingle: vi.fn(),
   };
   const client = { from: vi.fn() };
   return { requireStaff: vi.fn(), client, chain, revalidatePath: vi.fn() };
@@ -18,7 +19,12 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath }));
 import { createSupplier, reviewSupplier } from "@/features/suppliers/actions";
-import { createCustomer, createRfq, reviewRfq } from "@/features/rfqs/actions";
+import {
+  createCustomer,
+  createRfq,
+  reviewRfq,
+  amendRfq,
+} from "@/features/rfqs/actions";
 const org = "10000000-0000-4000-8000-000000000001";
 const id = "20000000-0000-4000-8000-000000000001";
 function form(values: Record<string, string>) {
@@ -38,7 +44,14 @@ beforeEach(() => {
   });
   chain.select.mockResolvedValue({ data: [{ id }], error: null });
 });
-it.each([createSupplier, reviewSupplier, createCustomer, createRfq, reviewRfq])(
+it.each([
+  createSupplier,
+  reviewSupplier,
+  createCustomer,
+  createRfq,
+  reviewRfq,
+  amendRfq,
+])(
   "authenticates every mutation independently of the layout",
   async (action) => {
     requireStaff.mockRejectedValue(new Error("Access denied"));
@@ -156,4 +169,73 @@ it("scopes and bounds quick find at the database query", async () => {
   expect(query.eq).toHaveBeenCalledWith("organization_id", org);
   expect(query.limit).toHaveBeenCalledWith(6);
   expect(query.ilike).toHaveBeenCalledWith("name", "%TEST%");
+});
+
+const amendment = {
+  id,
+  version: "4",
+  title: "TEST ONLY RFQ",
+  part_description: "SYNTHETIC",
+  drawing_reference: "TEST ONLY DWG",
+  drawing_revision: "B",
+  quantity: "20",
+  unit: "pieces",
+  target_date: "",
+  amendment_note: "TEST ONLY revision correction",
+};
+function amendmentRead(data: unknown) {
+  chain.select.mockReturnValueOnce(chain);
+  chain.maybeSingle.mockResolvedValue({ data, error: null });
+}
+it("requires a reason before reading or writing an amendment", async () => {
+  expect(
+    (await amendRfq({}, form({ ...amendment, amendment_note: " " }))).error,
+  ).toBeTruthy();
+  expect(client.from).not.toHaveBeenCalled();
+});
+it("scopes amendments and ignores injected approval and customer fields", async () => {
+  amendmentRead({ title: "TEST ONLY old" });
+  expect(
+    (
+      await amendRfq(
+        {},
+        form({
+          ...amendment,
+          organization_id: "injected",
+          customer_id: "injected",
+          engineering_state: "approved",
+        }),
+      )
+    ).success,
+  ).toBeTruthy();
+  expect(chain.eq).toHaveBeenCalledWith("organization_id", org);
+  expect(chain.eq).toHaveBeenCalledWith("version", 4);
+  expect(chain.update).toHaveBeenCalledWith({
+    title: amendment.title,
+    part_description: amendment.part_description,
+    drawing_reference: amendment.drawing_reference,
+    drawing_revision: "B",
+    quantity: 20,
+    unit: "pieces",
+    target_date: null,
+    amendment_note: amendment.amendment_note,
+  });
+});
+it("rejects a no-op amendment without a write", async () => {
+  amendmentRead({ ...amendment, quantity: 20, target_date: null });
+  expect((await amendRfq({}, form(amendment))).error).toContain(
+    "at least one requirement",
+  );
+  expect(chain.update).not.toHaveBeenCalled();
+});
+it("rejects a stale amendment before writing", async () => {
+  amendmentRead(null);
+  expect((await amendRfq({}, form(amendment))).error).toContain("Refresh");
+  expect(chain.update).not.toHaveBeenCalled();
+});
+it("handles an edit racing after the amendment read", async () => {
+  amendmentRead({ title: "TEST ONLY old" });
+  chain.select.mockResolvedValue({ data: [], error: null });
+  expect((await amendRfq({}, form(amendment))).error).toContain("Refresh");
+  expect(revalidatePath).not.toHaveBeenCalled();
 });

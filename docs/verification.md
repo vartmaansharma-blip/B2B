@@ -2,6 +2,46 @@
 
 Local evidence, 28 October 2026 (IST). This is implementation verification, not supplier validation or release authorization.
 
+## Current audit and RFQ drawing-control follow-up — 28 October 2026 (IST)
+
+This section supersedes earlier pending-setup/sign-in statements below; those sections remain as historical evidence. No hosted database writes, merge, or deployment were performed during this follow-up.
+
+### Repository, reviews and deployment
+
+- GitHub `main`: `eda907bb47f49c7a34e1df748bb26cff25a0b2db` (repository setup only; no application).
+- [V0 PR #1](https://github.com/vartmaansharma-blip/B2B/pull/1): open draft, unmerged, head `4e1b9f7435eb854184b47f11e12c7dac21bb6678`, no submitted reviews/comments at inspection. Its [exact-head CI run](https://github.com/vartmaansharma-blip/B2B/actions/runs/40619550025) passed.
+- Vercel's latest deployment is `dpl_H7oKBAyzB7d3TVhTcNThcGzkppvs`, READY, target `staging`, with metadata pointing to the same V0 head. Vercel project sign-in protection is enabled for production deployment URLs and all previews. A previous bootstrap deployment carries the production label; it does not establish production business readiness.
+- The related Work chat, **Build Manufacturing OS V0**, records owner password setup and successful admin sign-in. During this audit, the current browser redirected staff navigation to sign-in, so no active staff session was available for repeating authenticated acceptance. The sign-in page rendered successfully; no credential reset was initiated.
+- The drawing-control change is on `feat/rfq-drawing-revisions`, based on the V0 head. Its PR must target `feat/manufacturing-os-v0` until PR #1 merges, then be retargeted to `main`. This preserves the original V0 review and isolates the new work.
+
+### Hosted database and authentication, read-only evidence
+
+The dedicated B2B staging project is healthy on PostgreSQL 17.11. Its only applied migration is `20261027182029_manufacturing_os_v0`.
+
+Catalog inspection confirmed six public tables with RLS, twelve policies, staff-only grants, both tenant predicates on business UPDATE policies, the organization/customer composite foreign key, seven application triggers, and five private functions with empty search paths. Only membership lookup and trigger-only audit writing use definer privileges. There are no public RPC functions and no storage buckets. A generated hosted schema contract was inspected as a baseline; it does not include the new migration. All five live private function bodies match the committed V0 SQL after whitespace normalization; anonymous execution is revoked, with authenticated execution granted only for membership lookup.
+
+Actual HTTPS checks returned: Auth settings `disable_signup=true` and anonymous sign-in disabled; anonymous supplier GET **401 / 42501**; private-schema profile **406 / PGRST106**. This confirms private is excluded from the Data API. There is one active staff account and zero supplier/customer/RFQ records. Counts establish an empty workflow database, not successful business use.
+
+Security advisor: one warning, [leaked-password protection disabled](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). The earlier setup recorded the setting as unavailable on the selected Free plan; current plan entitlement was not reverified. Performance advisor: six informational missing author/reviewer foreign-key indexes and two unused indexes in the empty database. No security-policy findings were returned; this is not a security certification.
+
+### New implementation and local verification
+
+RFQ drafts accept an explicit customer-issued drawing revision. Engineering approval now requires a nonblank drawing reference and revision in a database constraint. Staff can amend requirements with a reason and optimistic version check. Every real amendment returns the RFQ to reviewing/pending, clears approval attribution, and appends before/after requirements to the immutable, tenant-private review ledger, including changes made while already pending. Every subsequent review event snapshots the requirements at that decision. Customer identity remains fixed; another customer needs a new RFQ. The app rejects no-op edits and ignores injected approval/customer/organization fields.
+
+The forward-only migration is `20261028023900_rfq_drawing_revisions.sql`. It preserves the existing grants/RLS and private trigger-only audit writer. It does not rewrite the applied V0 migration, invent historical evidence, or backfill drawing revisions. It deliberately fails and rolls back if legacy RFQs are already approved without revisions; an accountable engineer must first return those RFQs to reviewing/pending using the old workflow. Staging currently has zero RFQs, but recheck immediately before any authorized application.
+
+Local checks passed on supported Node **24.22.1**: formatting, zero-warning ESLint, strict TypeScript, **100 unit/action/PostgreSQL tests**, and optimized Next.js build. **22 desktop/mobile Chromium browser checks** passed against the production build and isolated PGlite/Auth/PostgREST fixture. RFQ checks cover the missing-drawing approval gate, adding drawing identity through an amendment, engineer approval, sourcing, revision/quantity amendment, visible before/after history, blocked stale edits from a second page, and renewed sourcing denial. Desktop/mobile screenshots were inspected. A subsequent verification run exposed an intermittent quick-find close/reopen race (21/22 passed): a queued native close event could close a freshly reopened dialog. The handler now resets state only if the dialog is still closed; the existing browser flow explicitly delivers a late close event after reopening as a regression check. The final full run after this correction passed 22/22. All business data used in these checks is visibly synthetic and stays local.
+
+The database suite also tests upgrade of existing pending RFQs without fabricated snapshots, rollback for incompatible legacy approvals, direct SQL bypass attempts, operator role enforcement, cross-organization isolation, private and immutable snapshots, and concurrent edit rejection. These tests do not establish real supplier capabilities or qualified engineering credentials.
+
+### Remaining acceptance and release boundaries
+
+The new migration is **not applied to hosted staging**, the new application is **not deployed**, and neither PR is merged. An additional in-memory TypeScript check passed against generated hosted V0 types augmented with the exact new SQL column types (zero diagnostics); JSON requirement snapshots are validated before display. This is a compatibility check, not type generation from the unapplied database. The manually maintained type contract includes the new fields; regeneration from a full local Supabase stack remains pending because this workstation has no Docker-compatible runtime. Hosted V0 type generation does not prove the unapplied new schema.
+
+Before accepting real confidential manufacturing data: review both PRs; authorize the exact staging migration; verify its live schema/advisors; regenerate and compare database types; deploy the exact reviewed branch to protected staging; and exercise real Auth/PostgREST using controlled operator/engineer/nonstaff accounts. Repeat password setup/recovery, token refresh, revocation, concurrency, HTTPS-cookie and cache checks. Confirm backup/recovery, retention and accountable engineering procedures. Merge and production deployment remain separate authorization steps under `AGENTS.md`.
+
+Still deferred: general supplier/customer corrections and private contacts; controlled file storage/retention and drawing-file revision management; RFQ-specific supplier shortlists; stored quotations/comparison; inspection acceptance and human production release; purchase orders, payments and delivery operations; permitted directory ingestion and real buyer/supplier validation. The new revision field records identity only and cannot prove the referenced file or engineering assessment exists.
+
 ## Passed locally
 
 `npm run check` passed on Node 22.23.4: formatting, ESLint with zero warnings, strict TypeScript, **68 tests**, and an optimized Next.js production build.

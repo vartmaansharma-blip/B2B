@@ -23,7 +23,7 @@ The audit ledger records review state, actor, note, scope, expiry and evidence r
 
 ## Customer and RFQ intake
 
-Select a customer business or add one with an intake reference, then create an RFQ. Capture requirements, quantity/unit, optional target date and a controlled drawing reference. Drawing uploads and commercial terms are outside V0. New RFQs start `draft / pending`.
+Select a customer business or add one with an intake reference, then create an RFQ. Capture requirements, quantity/unit, optional target date, and a controlled drawing reference and exact customer-issued revision. Drafts can be incomplete, but engineering approval requires both reference and revision. Drawing uploads and commercial terms are outside V0. New RFQs start `draft / pending`.
 
 | Current RFQ status | Allowed next statuses     |
 | ------------------ | ------------------------- |
@@ -33,9 +33,11 @@ Select a customer business or add one with an intake reference, then create an R
 | quoted             | reviewing, closed         |
 | closed             | reviewing                 |
 
-Operators can progress workflow status; engineers/admins record `pending`, `approved` or `changes_requested` decisions with a note. Sourcing and quoted statuses require an approved engineering decision. An engineering decision is separate from supplier qualification. Editing requirements through the Data API invalidates prior approval and returns the RFQ to reviewing/pending; database checks enforce this even outside the app.
+Operators can progress workflow status; engineers/admins record `pending`, `approved` or `changes_requested` decisions with a note. Sourcing and quoted statuses require an approved engineering decision. An engineering decision is separate from supplier qualification. Use **Amend requirements** to correct the title, specifications, drawing identity, quantity/unit or target date. Add a reason and save. Customer identity is fixed: create a new RFQ for a different customer. Every changed requirement invalidates approval and returns the RFQ to reviewing/pending, clearing reviewer attribution. Database checks enforce this even outside the app. A simultaneous attempt to amend and approve remains pending; engineering must review the new requirements separately. The app checks the loaded record version; stale edits require refreshing. No-op amendments are rejected.
 
-V0 UI supports creating and reviewing records. General business-record editing, file handling, supplier shortlisting, real quote comparison and production approvals are deferred. Correct an intake error by closing/rejecting the record with a clear reason and creating a correct record, or use a reviewed administrative correction. No deletion is available to app roles. Quoted is a staff tracking status, not a stored quotation or price claim.
+Amendment history contains the reason, authenticated actor, time, previous requirements and replacement requirements, with record versions. Reviews also retain a snapshot of the requirements at that decision. Staff cannot forge or edit these ledger entries. The screen shows the latest 50 events; earlier events remain private in the database. Events created before the amendment migration retain their original evidence without invented snapshots. This workflow is available only after the new migration and application receive staging acceptance.
+
+V0 UI supports creation, review and reasoned RFQ amendments. Supplier/customer corrections, file handling, supplier shortlisting, real quote comparison and production approvals are deferred. Correct a supplier/customer intake error by closing/rejecting its affected workflow with a clear reason and creating a correct record, or use a reviewed administrative correction. No deletion is available to app roles. Quoted is a staff tracking status, not a stored quotation or price claim.
 
 ## Responsibility
 

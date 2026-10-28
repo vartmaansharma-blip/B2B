@@ -1,7 +1,7 @@
 import { ActionForm } from "@/components/action-form";
 import { Field } from "@/components/field";
 import type { Rfq, Role } from "@/lib/types";
-import { createCustomer, createRfq, reviewRfq } from "./actions";
+import { createCustomer, createRfq, reviewRfq, amendRfq } from "./actions";
 import { engineeringStates, rfqTransitions } from "./model";
 export function CustomerForm() {
   return (
@@ -23,8 +23,21 @@ export function RfqForm({ customerId }: { customerId: string }) {
   return (
     <ActionForm action={createRfq} label="Create draft RFQ">
       <input type="hidden" name="customer_id" value={customerId} />
+      <RequirementFields />
+    </ActionForm>
+  );
+}
+function RequirementFields({ rfq }: { rfq?: Rfq }) {
+  return (
+    <>
       <Field label="RFQ title / part name" name="title">
-        <input id="title" name="title" required maxLength={200} />
+        <input
+          id="title"
+          name="title"
+          defaultValue={rfq?.title ?? ""}
+          required
+          maxLength={200}
+        />
       </Field>
       <Field
         label="Part requirements"
@@ -34,19 +47,33 @@ export function RfqForm({ customerId }: { customerId: string }) {
         <textarea
           id="part_description"
           name="part_description"
+          defaultValue={rfq?.part_description ?? ""}
           required
           maxLength={4000}
         />
       </Field>
       <Field
-        label="Controlled drawing reference (optional)"
+        label="Controlled drawing reference"
         name="drawing_reference"
-        hint="Reference only. File uploads are outside V0."
+        hint="Reference only. A reference and revision are required before engineering approval. Keep files in the approved private system."
       >
         <input
           id="drawing_reference"
           name="drawing_reference"
+          defaultValue={rfq?.drawing_reference ?? ""}
           maxLength={2000}
+        />
+      </Field>
+      <Field
+        label="Drawing revision"
+        name="drawing_revision"
+        hint="Use the exact revision issued by the customer. No inferred or automatic revision."
+      >
+        <input
+          id="drawing_revision"
+          name="drawing_revision"
+          maxLength={120}
+          defaultValue={rfq?.drawing_revision ?? ""}
         />
       </Field>
       <div className="form-grid">
@@ -54,6 +81,7 @@ export function RfqForm({ customerId }: { customerId: string }) {
           <input
             id="quantity"
             name="quantity"
+            defaultValue={rfq?.quantity ?? ""}
             type="number"
             required
             min={1}
@@ -67,13 +95,40 @@ export function RfqForm({ customerId }: { customerId: string }) {
             name="unit"
             required
             maxLength={40}
-            defaultValue="pieces"
+            defaultValue={rfq?.unit ?? "pieces"}
           />
         </Field>
         <Field label="Customer target date (optional)" name="target_date">
-          <input id="target_date" name="target_date" type="date" />
+          <input
+            id="target_date"
+            name="target_date"
+            defaultValue={rfq?.target_date ?? ""}
+            type="date"
+          />
         </Field>
       </div>
+    </>
+  );
+}
+export function RfqAmendmentForm({ rfq }: { rfq: Rfq }) {
+  return (
+    <ActionForm action={amendRfq} label="Save amendment and request review">
+      <input type="hidden" name="id" value={rfq.id} />
+      <input type="hidden" name="version" value={rfq.version} />
+      <RequirementFields key={rfq.version} rfq={rfq} />
+      <Field
+        label="Amendment reason"
+        name="amendment_note"
+        hint="Explain what changed and why. The previous requirements remain in private history."
+      >
+        <textarea
+          key={rfq.version}
+          id="amendment_note"
+          name="amendment_note"
+          required
+          maxLength={4000}
+        />
+      </Field>
     </ActionForm>
   );
 }
@@ -83,7 +138,12 @@ export function RfqReviewForm({ rfq, role }: { rfq: Rfq; role: Role }) {
       <input type="hidden" name="id" value={rfq.id} />
       <input type="hidden" name="version" value={rfq.version} />
       <Field label="RFQ status" name="status">
-        <select id="status" name="status" defaultValue={rfq.status}>
+        <select
+          key={rfq.version}
+          id="status"
+          name="status"
+          defaultValue={rfq.status}
+        >
           {[rfq.status, ...rfqTransitions[rfq.status]].map((s) => (
             <option key={s} value={s}>
               {s}
@@ -95,6 +155,7 @@ export function RfqReviewForm({ rfq, role }: { rfq: Rfq; role: Role }) {
         <>
           <Field label="Engineering decision" name="engineering_state">
             <select
+              key={rfq.version}
               id="engineering_state"
               name="engineering_state"
               defaultValue={rfq.engineering_state}
@@ -108,6 +169,7 @@ export function RfqReviewForm({ rfq, role }: { rfq: Rfq; role: Role }) {
           </Field>
           <Field label="Engineering review note" name="engineering_note">
             <textarea
+              key={rfq.version}
               id="engineering_note"
               name="engineering_note"
               maxLength={4000}

@@ -3,7 +3,12 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/features/auth/server";
 import { fields, saveError, type ActionState } from "@/lib/forms";
-import { customerSchema, rfqSchema, rfqReviewSchema } from "./model";
+import {
+  customerSchema,
+  rfqSchema,
+  rfqReviewSchema,
+  rfqAmendmentSchema,
+} from "./model";
 export async function createCustomer(
   _: ActionState,
   form: FormData,
@@ -74,7 +79,7 @@ export async function reviewRfq(
   if (error)
     return {
       error:
-        "Review could not be saved. Check the status transition, engineering approval, and review note. Refresh before retrying.",
+        "Review could not be saved. Check the status transition, engineering approval, drawing reference and revision, and review note. Refresh before retrying.",
     };
   if (!data.length)
     return {
@@ -85,4 +90,65 @@ export async function reviewRfq(
   revalidatePath("/rfqs");
   revalidatePath("/");
   return { success: "RFQ review saved and added to history." };
+}
+
+export async function amendRfq(
+  _: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  const { client, organizationId } = await requireStaff();
+  const input = rfqAmendmentSchema.safeParse(fields(form));
+  if (!input.success)
+    return {
+      error:
+        "Complete the requirements and amendment reason. Use a positive whole-number quantity.",
+    };
+  const { id, version, ...patch } = input.data;
+  const current = await client
+    .from("rfqs")
+    .select("*")
+    .eq("id", id)
+    .eq("organization_id", organizationId)
+    .eq("version", version)
+    .maybeSingle();
+  if (current.error) return { error: saveError };
+  if (!current.data)
+    return {
+      error:
+        "This record changed or is unavailable. Refresh before amending again.",
+    };
+  const existing = current.data;
+  const { amendment_note: reason, ...requirements } = patch;
+  if (
+    !Object.entries(requirements).some(
+      ([key, value]) => existing[key as keyof typeof requirements] !== value,
+    )
+  )
+    return {
+      error: "Change at least one requirement before saving an amendment.",
+    };
+  const { data, error } = await client
+    .from("rfqs")
+    .update({ ...requirements, amendment_note: reason })
+    .eq("id", id)
+    .eq("organization_id", organizationId)
+    .eq("version", version)
+    .select("id");
+  if (error)
+    return {
+      error:
+        "Amendment could not be saved. Change at least one requirement, add a reason, and refresh before retrying.",
+    };
+  if (!data.length)
+    return {
+      error:
+        "This record changed or is unavailable. Refresh before amending again.",
+    };
+  revalidatePath(`/rfqs/${id}`);
+  revalidatePath("/rfqs");
+  revalidatePath("/");
+  return {
+    success:
+      "Requirements amended. Engineering approval is pending and the change is recorded in history.",
+  };
 }

@@ -62,6 +62,7 @@ describe("input boundaries", () => {
           title: "TEST",
           part_description: "TEST",
           drawing_reference: "",
+          drawing_revision: "",
           quantity,
           unit: "pieces",
           target_date: "",

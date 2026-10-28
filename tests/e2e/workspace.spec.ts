@@ -250,16 +250,88 @@ test("RFQs require an engineering decision before sourcing", async ({
     );
   await page.getByRole("button", { name: "Save RFQ review" }).click();
   await expect(
-    page.getByRole("status", { name: "Save feedback" }),
+    page
+      .getByRole("alert")
+      .filter({ hasText: "drawing reference and revision" }),
+  ).toBeVisible();
+  await page.getByText("Amend requirements", { exact: true }).click();
+  await page
+    .getByLabel("Controlled drawing reference", { exact: true })
+    .fill("SYNTHETIC DRAWING ONLY");
+  await page.getByLabel("Drawing revision", { exact: true }).fill("A");
+  await page
+    .getByLabel("Amendment reason")
+    .fill("TEST ONLY add controlled drawing identity");
+  await page
+    .getByRole("button", { name: "Save amendment and request review" })
+    .click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Requirements amended" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Engineering decision")).toHaveValue("pending");
+  await page.getByLabel("Engineering decision").selectOption("approved");
+  await page
+    .getByLabel("Engineering review note")
+    .fill("SYNTHETIC TEST ONLY approval of revision A");
+  await page.getByRole("button", { name: "Save RFQ review" }).click();
+  await expect(
+    page
+      .getByRole("status", { name: "Save feedback" })
+      .filter({ hasText: "RFQ review saved" }),
   ).toContainText("RFQ review saved");
   await expect(page.getByLabel("Engineering decision")).toHaveValue("approved");
   await page.getByLabel("RFQ status").selectOption("sourcing");
   await page.getByRole("button", { name: "Save RFQ review" }).click();
   await expect(
-    page.getByRole("status", { name: "Save feedback" }),
+    page
+      .getByRole("status", { name: "Save feedback" })
+      .filter({ hasText: "RFQ review saved" }),
   ).toContainText("RFQ review saved");
   await expect(
     page.locator("span.badge").filter({ hasText: /^sourcing$/ }),
+  ).toBeVisible();
+  const stale = await page.context().newPage();
+  await stale.goto(rfqUrl);
+  await stale.getByText("Amend requirements", { exact: true }).click();
+  await page.getByLabel("Drawing revision", { exact: true }).fill("B");
+  await page.getByLabel("Quantity", { exact: true }).fill("20");
+  await page
+    .getByLabel("Amendment reason")
+    .fill("TEST ONLY revised drawing and quantity");
+  await page
+    .getByRole("button", { name: "Save amendment and request review" })
+    .click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Requirements amended" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Engineering decision")).toHaveValue("pending");
+  await expect(page.getByLabel("RFQ status")).toHaveValue("reviewing");
+  await stale.getByLabel("Drawing revision", { exact: true }).fill("C");
+  await stale.getByLabel("Amendment reason").fill("TEST ONLY stale correction");
+  await stale
+    .getByRole("button", { name: "Save amendment and request review" })
+    .click();
+  await expect(
+    stale.getByRole("alert").filter({ hasText: "Refresh" }),
+  ).toBeVisible();
+  await stale.close();
+  const history = page
+    .locator("section")
+    .filter({ has: page.getByRole("heading", { name: "Review history" }) });
+  const latestAmendment = history
+    .locator("li")
+    .filter({ hasText: "TEST ONLY revised drawing and quantity" });
+  await latestAmendment.getByText(/Requirement amendment/).click();
+  await expect(
+    latestAmendment.getByRole("heading", { name: /Before/ }),
+  ).toBeVisible();
+  await expect(
+    latestAmendment.getByRole("heading", { name: /After/ }),
+  ).toBeVisible();
+  await page.getByLabel("RFQ status").selectOption("sourcing");
+  await page.getByRole("button", { name: "Save RFQ review" }).click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "require engineering approval" }),
   ).toBeVisible();
   await page.screenshot({
     path: `test-results/${info.project.name}-rfq.png`,
@@ -323,6 +395,9 @@ test("quick find searches real workspace records and supports the keyboard", asy
   await expect(dialog).not.toBeVisible();
   await expect(page.getByRole("heading", { name })).toBeVisible();
   await page.keyboard.press("ControlOrMeta+k");
+  await expect(dialog).toBeVisible();
+  // Reproduce a previous native close event arriving after the dialog reopens.
+  await dialog.dispatchEvent("close");
   await expect(dialog).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(dialog).not.toBeVisible();

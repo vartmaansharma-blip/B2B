@@ -33,7 +33,7 @@ beforeAll(async () => {
     await asUser<Rfq>(
       db,
       ids.operator,
-      "insert into public.rfqs(organization_id,customer_id,title,part_description,quantity,unit) values($1,$2,'TEST ONLY RFQ','SYNTHETIC',10,'pieces') returning *",
+      "insert into public.rfqs(organization_id,customer_id,title,part_description,drawing_reference,drawing_revision,quantity,unit) values($1,$2,'TEST ONLY RFQ','SYNTHETIC','SYNTHETIC DRAWING','A',10,'pieces') returning *",
       [ids.orgA, customerId],
     )
   ).rows[0];
@@ -418,7 +418,7 @@ describe("RFQ review", () => {
       await asUser<Rfq>(
         db,
         ids.operator,
-        "update public.rfqs set quantity=20 where id=$1 returning *",
+        "update public.rfqs set quantity=20,amendment_note='TEST ONLY quantity correction' where id=$1 returning *",
         [rfq.id],
       )
     ).rows[0];
@@ -431,7 +431,7 @@ describe("RFQ review", () => {
       asUser(
         db,
         ids.operator,
-        "update public.rfqs set quantity=0 where id=$1",
+        "update public.rfqs set quantity=0,amendment_note='TEST ONLY invalid correction' where id=$1",
         [rfq.id],
       ),
     ).rejects.toThrow(/check constraint/);

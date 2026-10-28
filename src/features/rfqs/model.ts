@@ -35,9 +35,15 @@ export const rfqSchema = z.object({
   title: requiredText(200),
   part_description: requiredText(4000),
   drawing_reference: optionalText(2000),
+  drawing_revision: optionalText(120),
   quantity: z.coerce.number().int().min(1).max(1000000000),
   unit: requiredText(40),
   target_date: optionalDate,
+});
+export const rfqAmendmentSchema = rfqSchema.omit({ customer_id: true }).extend({
+  id: recordId,
+  version: versionSchema,
+  amendment_note: requiredText(4000),
 });
 export const rfqReviewSchema = z
   .object({
@@ -52,3 +58,18 @@ export const rfqReviewSchema = z
       !["sourcing", "quoted"].includes(v.status) ||
       v.engineering_state === "approved",
   );
+
+// Database JSON is validated at the presentation boundary, including after type regeneration.
+const requirementSnapshotSchema = rfqSchema.extend({
+  drawing_reference: z.string().nullable(),
+  drawing_revision: z.string().nullable(),
+  target_date: z.iso.date().nullable(),
+  version: z.number().int().positive(),
+});
+export type RequirementSnapshot = z.infer<typeof requirementSnapshotSchema>;
+export function parseRequirementSnapshot(
+  value: unknown,
+): RequirementSnapshot | null {
+  const parsed = requirementSnapshotSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+}

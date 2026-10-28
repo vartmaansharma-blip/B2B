@@ -50,6 +50,8 @@ export type Rfq = {
   title: string;
   part_description: string;
   drawing_reference: string | null;
+  drawing_revision: string | null;
+  amendment_note: string | null;
   quantity: number;
   unit: string;
   target_date: string | null;
@@ -63,11 +65,20 @@ export type Rfq = {
   updated_at: string;
   version: number;
 };
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 export type ReviewEvent = {
   id: string;
   organization_id: string;
   entity_type: "supplier" | "rfq";
   entity_id: string;
+  requirements_before: Json | null;
+  requirements_after: Json | null;
   from_state: string | null;
   to_state: string;
   note: string | null;

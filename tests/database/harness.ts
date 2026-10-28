@@ -9,14 +9,16 @@ export const ids = {
   outsider: "20000000-0000-4000-8000-000000000004",
   anonymous: "20000000-0000-4000-8000-000000000005",
 };
-export async function database() {
+export async function database(migrationLimit?: string) {
   const db = new PGlite();
   await db.exec(`create role anon nologin; create role authenticated nologin;
  create schema auth; create table auth.users(id uuid primary key, is_anonymous boolean default false);
  create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true),'')::uuid $$;
  grant usage on schema public,auth to anon,authenticated; grant execute on function auth.uid() to anon,authenticated;`);
   for (const file of readdirSync("supabase/migrations")
-    .filter((f) => f.endsWith(".sql"))
+    .filter(
+      (f) => f.endsWith(".sql") && (!migrationLimit || f <= migrationLimit),
+    )
     .sort())
     await db.exec(readFileSync(`supabase/migrations/${file}`, "utf8"));
   await db.query(
