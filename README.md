@@ -1,20 +1,47 @@
 # B2B — Manufacturing OS
 
-Internal operating software for an engineering-led industrial manufacturing and supplier network in India.
+Private operating software for an engineering-led manufacturing and supplier network in India.
 
-**Current phase:** V0 foundation. The business opportunity and initial product category remain research hypotheses; no suppliers are approved and no purchase orders are active.
+**Phase: V0 implementation, pending review and environment setup.** The business opportunity and initial product category remain hypotheses. This code does not establish supplier qualifications, customer demand, purchase orders, or delivery commitments.
 
-## First release
-- Invite-only staff sign-in
-- Private supplier discovery registry with evidence provenance
-- Capability and verification records (discovered ≠ qualified)
-- Schema for customer requirements and RFQs
-- Engineering approvals before production commitments
+## V0
+
+- Invite-only Supabase staff sign-in and password setup/recovery
+- Organization-scoped supplier registry with discovery provenance, reported processes and materials
+- Qualification stages with engineering-only approval, scope, evidence, expiry, and immutable review history
+- Customer business records, RFQ requirements, engineering review, and sourcing workflow
+- Server-side access checks plus database RLS, grants, tenant-safe foreign keys and workflow triggers
+- Desktop/mobile screens, quick find with keyboard navigation, copyable record references, loading states and accessible feedback
+- Cinematic sign-in art, animated engineering linework, page transitions and persistent reduced-motion controls
+- Pagination, input validation, concurrency protection and CI
+
+## Start
+
+Use Node 22 (`.nvmrc`).
+
+```sh
+npm ci
+cp .env.example .env.local
+# Follow docs/environment.md to configure a local/private Supabase environment.
+npm run dev
+```
+
+Without configuration, the app displays setup instructions. No sample business data is loaded. See the [documentation index](docs/README.md) for architecture, setup, operating sequence, security, tests and roadmap.
+
+```sh
+npm run check
+npx playwright install chromium
+npm run test:e2e
+```
+
+Database tests execute the migrations under PostgreSQL roles in PGlite. Browser tests use an isolated Auth/PostgREST protocol fixture backed by PGlite, not a live Supabase project. They need no customer data or hosted credentials.
 
 ## Guardrails
-- Never commit customer drawings, private supplier rates, passwords, API keys or personal data.
-- Public repository contains **source code and synthetic examples only**.
-- Customer-specific records belong in a private authenticated database with row-level security.
-- AI can assist extraction and search; it cannot approve a manufacturer's qualifications.
 
-See `docs/roadmap.md`, `docs/architecture.md` and `supabase/migrations/` after the feature branch is merged.
+- Never commit drawings, private supplier rates, passwords, API keys, personal data or live exports.
+- This public repository contains source code and visibly synthetic test fixtures only.
+- Customer and supplier records belong in a private authenticated database with RLS.
+- Discovery is not qualification. AI cannot approve a manufacturer's capabilities.
+- V0 has no production-commitment, payment, purchase-order, customer portal or document-upload feature.
+
+No hosted project is provisioned or migrated by this repository. Merge and deployment are separate reviewed steps.
