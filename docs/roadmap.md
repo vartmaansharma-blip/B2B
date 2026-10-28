@@ -4,9 +4,9 @@
 
 Implemented in the feature PR: one modular application; staff authentication and invitations/recovery; tenant-aware schema and RLS; supplier provenance and qualification review; customer/RFQ intake and engineering decisions; audit ledger; responsive staff UI; validation, version protection, pagination; local tests and CI.
 
-Current verified baseline, 28 October 2026: PR #1 and PR #2 are merged; fetched `main` is `dd26b88aa7f5d9dea3d1d3407d045bd8fbdbc981`. The hosted B2B staging database still has only the V0 migration, and the latest observed deployment is the earlier V0 staging build. These are independent states. Read [verification](verification.md) for current evidence and limits. No supplier or business hypothesis has been validated by this build.
+Initial audit baseline, 28 October 2026: PR #1 and PR #2 were merged; fetched `main` was `dd26b88aa7f5d9dea3d1d3407d045bd8fbdbc981`. Staging still had only V0 and its earlier deployment. The authorized follow-up applied drawing control and shortlists and published the feature branch to protected Preview; `main` stays unchanged. Read [verification](verification.md) for current evidence and limits. No supplier or business hypothesis has been validated by this build.
 
-Drawing-reference/revision approval gates and reasoned RFQ amendments are merged in PR #2, with hosted migration and deployment still pending. A revision reference does not provide controlled document storage.
+Drawing-reference/revision approval gates and reasoned RFQ amendments are merged in PR #2 and included in the authorized feature-branch staging rollout. A revision reference does not provide controlled document storage.
 
 ## Current branch: capability observations and RFQ supplier shortlists
 

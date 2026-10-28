@@ -53,7 +53,7 @@ Every business record has an organization. RFQ customer references use a composi
 
 `model.ts` is pure validation and display/state logic. `queries.ts` owns authenticated reads. `actions.ts` validates input and owns authenticated writes. `forms.tsx` composes shared controls. Routes select and render these pieces. Database triggers remain authoritative for role-restricted review decisions and transitions even if a caller bypasses the UI.
 
-`database.types.ts` starts as a schema-derived V0 contract, not output claimed from a hosted project. `npm run db:types` atomically regenerates it from a running local Supabase stack; `lib/types.ts` provides stable domain aliases. Schema changes and regenerated contracts belong in the same PR.
+`database.types.ts` is generated from the migrated B2B staging schema after the authorized capability/shortlist rollout. `npm run db:types` can atomically regenerate it from a running local Supabase stack; `lib/types.ts` provides stable domain aliases. Generated view nullability is validated at the query boundary. Schema changes and regenerated contracts belong in the same PR.
 
 ## Expansion rules
 
