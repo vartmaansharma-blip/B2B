@@ -42,6 +42,10 @@ RLS independently checks membership for the record's organization. The narrow `p
 - `customers`: minimal business identity and intake reference
 - `rfqs`: customer requirements, quantities, controlled drawing reference, workflow and engineering decision
 - `review_events`: append-only supplier/RFQ review history written transactionally by triggers
+- `supplier_capabilities`: append-only reported process/material observations, tolerance/inspection notes, dated provenance; separate from qualification
+- `rfq_shortlists`: one supplier proposal per RFQ, bound to a capability observation, requirement revision and supplier version, with separate engineering fit acceptance
+- `shortlist_events`: immutable snapshots of every proposal, acceptance, removal and reproposal
+- `rfq_shortlist_status`: a read-only `security_invoker` view that applies caller RLS and computes current validity; stored `state` is historical, never a live approval authority
 
 Every business record has an organization. RFQ customer references use a composite foreign key to prevent linking another organization's customer. Names are normalized for duplicate protection within a workspace (supplier name + city, customer name). Identity/creation fields cannot change. Lists use deterministic ordering and 25-row pages. Detail history shows the newest 50 events; older events remain in the database. Application updates include a version predicate; a stale edit returns a refresh message.
 
@@ -49,7 +53,7 @@ Every business record has an organization. RFQ customer references use a composi
 
 `model.ts` is pure validation and display/state logic. `queries.ts` owns authenticated reads. `actions.ts` validates input and owns authenticated writes. `forms.tsx` composes shared controls. Routes select and render these pieces. Database triggers remain authoritative for role-restricted review decisions and transitions even if a caller bypasses the UI.
 
-`database.types.ts` starts as a schema-derived V0 contract, not output claimed from a hosted project. `npm run db:types` atomically regenerates it from a running local Supabase stack; `lib/types.ts` provides stable domain aliases. Schema changes and regenerated contracts belong in the same PR.
+`database.types.ts` is generated from the migrated B2B staging schema after the authorized capability/shortlist rollout. `npm run db:types` can atomically regenerate it from a running local Supabase stack; `lib/types.ts` provides stable domain aliases. Generated view nullability is validated at the query boundary. Schema changes and regenerated contracts belong in the same PR.
 
 ## Expansion rules
 

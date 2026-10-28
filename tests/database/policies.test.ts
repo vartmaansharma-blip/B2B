@@ -46,7 +46,7 @@ describe("database authorization", () => {
     const r = await db.query<{ relrowsecurity: boolean }>(
       "select relrowsecurity from pg_class join pg_namespace n on n.oid=relnamespace where n.nspname='public' and relkind='r'",
     );
-    expect(r.rows).toHaveLength(6);
+    expect(r.rows).toHaveLength(9);
     expect(r.rows.every((r) => r.relrowsecurity)).toBe(true);
   });
   it.each([
@@ -56,6 +56,10 @@ describe("database authorization", () => {
     "customers",
     "rfqs",
     "review_events",
+    "supplier_capabilities",
+    "rfq_shortlists",
+    "shortlist_events",
+    "rfq_shortlist_status",
   ])("denies anonymous reads of %s", async (table) => {
     await expect(
       db.transaction(async (tx) => {

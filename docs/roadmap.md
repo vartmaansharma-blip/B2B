@@ -4,9 +4,15 @@
 
 Implemented in the feature PR: one modular application; staff authentication and invitations/recovery; tenant-aware schema and RLS; supplier provenance and qualification review; customer/RFQ intake and engineering decisions; audit ledger; responsive staff UI; validation, version protection, pagination; local tests and CI.
 
-Current verified status: V0 remains in open draft PR #1, unmerged. A dedicated Supabase staging project has the V0 migration applied, and a protected Vercel staging deployment matches the latest V0 head. One staff account exists; business registers are empty. Read the dated current audit in [verification](verification.md) for exact SHAs, live RLS/grant/Auth results, advisor warnings and remaining authenticated acceptance. Code review/merge and production deployment are separate steps. No supplier or business hypothesis has been validated by this build.
+Initial audit baseline, 28 October 2026: PR #1 and PR #2 were merged; fetched `main` was `dd26b88aa7f5d9dea3d1d3407d045bd8fbdbc981`. Staging still had only V0 and its earlier deployment. The authorized follow-up applied drawing control and shortlists and published the feature branch to protected Preview; `main` stays unchanged. Read [verification](verification.md) for current evidence and limits. No supplier or business hypothesis has been validated by this build.
 
-Next implemented change, pending PR review and staging acceptance: drawing-reference/revision approval gates and reasoned RFQ amendments with immutable requirement snapshots, optimistic concurrency and automatic approval invalidation. Its forward migration and application are not deployed. A revision reference does not provide controlled document storage.
+Drawing-reference/revision approval gates and reasoned RFQ amendments are merged in PR #2 and included in the authorized feature-branch staging rollout. A revision reference does not provide controlled document storage.
+
+## Current branch: capability observations and RFQ supplier shortlists
+
+`feat/procurement-shortlists` is the working/publishing source at the user's request; keep `main` separate. It adds structured reported capabilities, bounded process/material search, RFQ proposals, engineer/admin part-fit acceptance and immutable snapshots. The database derives current shortlist status from requirement revision, supplier version, qualification validity and the current RFQ engineering decision. Repropose and accept again after those change. This is an internal human review workflow; it sends no supplier communications and grants no production authority.
+
+The forward migration is `20261028115224_procurement_shortlists.sql`. Apply the missing drawing-control migration first. Hosted database writes require exact project/file approval; publishing code alone cannot install a schema. See [environment](environment.md) for the rollout and [verification](verification.md) for evidence. Existing authentication and tenant boundaries were extended, rather than replaced.
 
 ## Next: learn from a narrow real workflow
 
@@ -16,7 +22,7 @@ Choose one part category and one manufacturing cluster with accountable human en
 
 1. Extend the implemented RFQ amendment/history pattern to supplier/customer corrections; supplier contacts with private-data controls.
 2. Controlled document storage and drawing revisions with scoped authorization and retention rules.
-3. Part-specific supplier shortlists, quote records and comparable engineering/commercial assumptions.
+3. Quote records and comparable engineering/commercial assumptions after using the implemented shortlist workflow.
 4. Inspection plans, independent acceptance evidence and explicit human production approval gates.
 5. Purchase orders, production coordination and delivery accountability after legal/operational design.
 6. Assisted extraction/search, permitted directory ingestion and coverage measurement after provenance and review controls are proven.

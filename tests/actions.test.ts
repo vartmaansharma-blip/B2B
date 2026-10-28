@@ -19,6 +19,11 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath }));
 import { createSupplier, reviewSupplier } from "@/features/suppliers/actions";
+import { addCapability } from "@/features/suppliers/capability-actions";
+import {
+  proposeSupplier,
+  reviewShortlist,
+} from "@/features/rfqs/shortlist-actions";
 import {
   createCustomer,
   createRfq,
@@ -44,6 +49,111 @@ beforeEach(() => {
   });
   chain.select.mockResolvedValue({ data: [{ id }], error: null });
 });
+const proposal = {
+  rfq_id: id,
+  supplier_id: id,
+  capability_id: id,
+  requirements_version: "2",
+  supplier_version: "3",
+  review_note: "SYNTHETIC proposal",
+};
+it("derives shortlist organization from staff and ignores injected approval fields", async () => {
+  chain.insert.mockResolvedValueOnce({ error: null });
+  expect(
+    (
+      await proposeSupplier(
+        {},
+        form({
+          ...proposal,
+          organization_id: "FORGED",
+          state: "accepted",
+          reviewed_by: "FORGED",
+          requirements_snapshot: "{}",
+        }),
+      )
+    ).success,
+  ).toBeTruthy();
+  expect(chain.insert).toHaveBeenCalledWith({
+    ...proposal,
+    requirements_version: 2,
+    supplier_version: 3,
+    organization_id: org,
+  });
+});
+it("rejects operator shortlist acceptance before querying", async () => {
+  expect(
+    (
+      await reviewShortlist(
+        {},
+        form({
+          ...proposal,
+          id,
+          version: "1",
+          state: "accepted",
+          fit_evidence_reference: "SYNTHETIC",
+          rfq_reviewed_at: "2026-10-28T00:00:00Z",
+        }),
+      )
+    ).error,
+  ).toContain("engineer");
+  expect(client.from).not.toHaveBeenCalled();
+});
+it("scopes shortlist reviews by organization, RFQ and loaded entry version", async () => {
+  expect(
+    (
+      await reviewShortlist(
+        {},
+        form({
+          ...proposal,
+          id,
+          version: "4",
+          state: "proposed",
+          fit_evidence_reference: "",
+          rfq_reviewed_at: "",
+        }),
+      )
+    ).success,
+  ).toBeTruthy();
+  expect(chain.eq).toHaveBeenCalledWith("organization_id", org);
+  expect(chain.eq).toHaveBeenCalledWith("rfq_id", id);
+  expect(chain.eq).toHaveBeenCalledWith("version", 4);
+  expect(chain.update).toHaveBeenCalledWith({
+    state: "proposed",
+    capability_id: id,
+    requirements_version: 2,
+    supplier_version: 3,
+    review_note: "SYNTHETIC proposal",
+  });
+});
+it("reports a stale shortlist instead of success or leaking database errors", async () => {
+  chain.select.mockResolvedValue({ data: [], error: null });
+  const values = form({
+    ...proposal,
+    id,
+    version: "4",
+    state: "removed",
+    fit_evidence_reference: "",
+    rfq_reviewed_at: "",
+  });
+  expect((await reviewShortlist({}, values)).error).toContain("Refresh");
+  expect(revalidatePath).not.toHaveBeenCalled();
+  chain.select.mockResolvedValue({
+    data: null,
+    error: { message: "PRIVATE DETAIL" },
+  });
+  expect((await reviewShortlist({}, values)).error).not.toContain(
+    "PRIVATE DETAIL",
+  );
+});
+it("authenticates capability and shortlist reads independently", async () => {
+  requireStaff.mockRejectedValue(new Error("Access denied"));
+  const { listCapabilities } =
+    await import("@/features/suppliers/capability-queries");
+  const { getShortlist } = await import("@/features/rfqs/shortlist-queries");
+  await expect(listCapabilities(id, 1)).rejects.toThrow("Access denied");
+  await expect(getShortlist(id, 1, 1, "", "")).rejects.toThrow("Access denied");
+  expect(client.from).not.toHaveBeenCalled();
+});
 it.each([
   createSupplier,
   reviewSupplier,
@@ -51,6 +161,9 @@ it.each([
   createRfq,
   reviewRfq,
   amendRfq,
+  addCapability,
+  proposeSupplier,
+  reviewShortlist,
 ])(
   "authenticates every mutation independently of the layout",
   async (action) => {

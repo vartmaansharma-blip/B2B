@@ -42,6 +42,29 @@ The application does not automatically create, link, migrate, or deploy a hosted
 
 The new `20261028023900_rfq_drawing_revisions.sql` migration must follow V0 and precede deployment of the amendment UI. It is not applied by the app. Recheck migration history and existing approvals before applying it to the explicitly authorized staging project. An older approved RFQ has no structured revision: the constraint intentionally stops the migration rather than guessing a revision or silently changing approval history. Have an accountable engineer first return those records to reviewing/pending under the old workflow. After migration, staff can add exact drawing references/revisions with an amendment and request a fresh engineering decision. Verify the new schema and regenerate types before deploying the reviewed application. Keep the updated application out of a V0-only database: writes to new columns will fail. Do not drop the new columns to roll back an application deployment; preserve audit history and use an additive repair if needed.
 
+## Capability and shortlist migration rollout
+
+Review `20261028115224_procurement_shortlists.sql` with the drawing-control migration immediately before it. It adds three RLS-protected tables, a caller-scoped live-status view and an RFQ requirements counter; it does not create staff, business records, qualifications or shortlists. Existing RFQs start with requirements version 1. This is the baseline for future changes, not a reconstruction of older amendments. No applied migration is edited.
+
+1. Obtain approval for the exact hosted project and both pending files. Check its migration history, existing approvals and backup/recovery state. Current observed staging has only V0; do not infer that remains true later.
+2. Apply missing migrations in order: `20261028023900_rfq_drawing_revisions.sql`, then `20261028115224_procurement_shortlists.sql`. The first migration fails safely if legacy approvals lack drawing revisions; resolve those through accountable engineering review first.
+3. Verify nine public tables with RLS, the `rfq_shortlist_status` view with `security_invoker=true`, staff-only grants, tenant-safe composite foreign keys and revoked trigger-function execution. Keep `private` excluded from PostgREST. Run security/performance advisors on the approved project and inspect results.
+4. Generate types from the migrated environment and compare the committed contract. The contract is manually maintained until a real Supabase stack is available; passing PGlite tests is not type regeneration.
+5. Deploy the exact checked `feat/procurement-shortlists` commit to the protected review environment. Do not merge into or deploy `main`. Verify actual staff sign-in, capability/proposal/acceptance flows, stale decisions, cross-tenant API denial, history and HTTPS/cache behaviour before using real records.
+
+The application does not apply migrations. A V0-only database is incompatible with drawing-revision and shortlist screens; do not publish a usable-workflow claim against it. On failure, preserve tables and ledger entries; restore the earlier application if appropriate and use a reviewed additive repair. Do not drop audit tables to roll back the UI.
+
+### Applied staging history and future migration tooling
+
+The user approved both exact files and B2B staging on 28 October 2026. Supabase's migration API applied them successfully and recorded its generated versions:
+
+| Repository file                             | Hosted version   | Hosted name              |
+| ------------------------------------------- | ---------------- | ------------------------ |
+| `20261028023900_rfq_drawing_revisions.sql`  | `20261028120807` | `rfq_drawing_revisions`  |
+| `20261028115224_procurement_shortlists.sql` | `20261028120816` | `procurement_shortlists` |
+
+The earlier V0 history remains `20261027182029`. Automatic approval review rejected rewriting the new history versions as outside the migration approval; provider-assigned history is preserved. Do not automatically run CLI push/pull/reset/repair against this project: compare migration names and exact SQL with this mapping first, and obtain explicit approval for any metadata reconciliation. Do not reapply these files merely because their repository timestamps differ. No business records were changed by the migrations. New environments still apply repository files in their existing order.
+
 ## First organization and staff
 
 An application admin is not a database administrator. No app role may create memberships or promote itself. Use the Supabase dashboard / trusted database operator for provisioning.

@@ -29,6 +29,11 @@ export default async function RfqDetail({
         <Badge value={r.status} />
       </div>
       <CopyReference id={r.id} />
+      <p>
+        <Link href={`/rfqs/${id}/shortlist`}>
+          Build and review supplier shortlist →
+        </Link>
+      </p>
       <div className="detail-grid">
         <div>
           <section className="panel">

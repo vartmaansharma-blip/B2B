@@ -33,6 +33,10 @@ const tables = new Set([
   "customers",
   "rfqs",
   "review_events",
+  "supplier_capabilities",
+  "rfq_shortlists",
+  "shortlist_events",
+  "rfq_shortlist_status",
 ]);
 const identifier = (s: string) => {
   if (!/^[a-z_]+$/.test(s)) throw new Error("Invalid fixture identifier");
@@ -108,6 +112,16 @@ const server = createServer(async (req, res) => {
         gt: ">",
         ilike: "ilike",
       };
+      if (op === "in" && v.startsWith("(") && v.endsWith(")")) {
+        filters.push(
+          `${identifier(key)} in (${v
+            .slice(1, -1)
+            .split(",")
+            .map((item) => bind(item))
+            .join(",")})`,
+        );
+        continue;
+      }
       if (!operators[op]) throw new Error(`Unsupported fixture filter ${op}`);
       filters.push(`${identifier(key)} ${operators[op]} ${bind(v)}`);
     }

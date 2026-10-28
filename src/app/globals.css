@@ -1039,6 +1039,7 @@ dd {
   opacity: 0.7;
 }
 .badge-qualified,
+.badge-accepted,
 .badge-approved {
   background: #f1f8f4;
   border-color: #dceee2;
@@ -1048,6 +1049,11 @@ dd {
 .badge-suspended,
 .badge-changes_requested,
 .badge-review_expired {
+  background: #fcf2ed;
+  border-color: #f1ded3;
+  color: #b1744f;
+}
+.badge-needs_review {
   background: #fcf2ed;
   border-color: #f1ded3;
   color: #b1744f;

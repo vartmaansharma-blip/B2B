@@ -32,6 +32,11 @@ export default async function SupplierDetail({
         <Badge value={effectiveQualification(s)} />
       </div>
       <CopyReference id={s.id} />
+      <p>
+        <Link href={`/suppliers/${id}/capabilities`}>
+          View and record reported capabilities →
+        </Link>
+      </p>
       <div className="detail-grid">
         <div>
           <section className="panel">
