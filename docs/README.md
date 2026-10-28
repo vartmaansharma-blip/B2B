@@ -8,6 +8,7 @@ Read in this order when joining the project:
 4. [Operating sequence](workflow.md) — discovery, qualification and RFQ review rules
 5. [Security](security.md) — permissions, threat boundaries and release requirements
 6. [Verification](verification.md) — commands, evidence and what remains unverified
+   - [Opt-in hosted acceptance](hosted-acceptance.md) — exact synthetic scope, approval gates, real Auth/PostgREST/browser suite and expiry continuation
 7. [Roadmap](roadmap.md) — implementation sequence and deferred capabilities
 8. [Interface direction](design.md) — typography, visual references and shared design rules
 9. [Feature checklist](feature-checklist.md) — repeatable feature delivery process

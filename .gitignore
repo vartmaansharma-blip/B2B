@@ -10,3 +10,7 @@ supabase/.branches/
 .DS_Store
 *.tsbuildinfo
 .vercel
+
+# Defense in depth; hosted private files must live outside this repository.
+.hosted-acceptance/
+*.hosted-private.json

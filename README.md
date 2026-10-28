@@ -2,7 +2,7 @@
 
 Private operating software for an engineering-led manufacturing and supplier network in India.
 
-**Phase: V0 and drawing control merged; capability/shortlist work continues on `feat/procurement-shortlists`.** This branch is the working/publishing source; `main` remains separate. Hosted migration and deployment status are recorded separately in [verification](docs/verification.md). The business opportunity and initial product category remain hypotheses. This code does not establish supplier qualifications, customer demand, purchase orders, or delivery commitments.
+**Phase: V0 and drawing control merged; capability/shortlist work continues on `feat/procurement-shortlists`.** The designated working/publishing source is `feat/procurement-shortlists`; `main` remains separate. Hosted migration and deployment status are recorded separately in [verification](docs/verification.md). The business opportunity and initial product category remain hypotheses. This code does not establish supplier qualifications, customer demand, purchase orders, or delivery commitments.
 
 ## V0
 
@@ -37,7 +37,7 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-Database tests execute the migrations under PostgreSQL roles in PGlite. Browser tests use an isolated Auth/PostgREST protocol fixture backed by PGlite, not a live Supabase project. They need no customer data or hosted credentials.
+Database tests execute the migrations under PostgreSQL roles in PGlite. Browser tests use an isolated Auth/PostgREST protocol fixture backed by PGlite, not a live Supabase project. They need no customer data or hosted credentials. The separate [opt-in hosted acceptance suite](docs/hosted-acceptance.md) requires approval of an exact synthetic scope before provisioning or test writes.
 
 ## Guardrails
 
@@ -47,4 +47,4 @@ Database tests execute the migrations under PostgreSQL roles in PGlite. Browser 
 - Discovery is not qualification. AI cannot approve a manufacturer's capabilities.
 - V0 has no production-commitment, payment, purchase-order, customer portal or document-upload feature.
 
-The repository does not automatically provision, migrate or deploy hosted services. V0 was separately staged; see the dated [verification record](docs/verification.md) for exact code, database and deployment evidence. Merge, migration application and deployment are separate reviewed steps.
+The application does not provision or migrate hosted services. Vercel is now Git-connected; the acceptance branch disables its own automatic deployments in `vercel.json`. V0 was separately staged; see the dated [verification record](docs/verification.md) for exact code, database and deployment evidence. Merge, migration application and deployment are separate reviewed steps.

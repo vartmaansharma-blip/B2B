@@ -6,3 +6,7 @@ playwright-report
 package-lock.json
 next-env.d.ts
 supabase/.temp
+
+# Defense in depth; hosted private files must live outside this repository.
+.hosted-acceptance/
+*.hosted-private.json
