@@ -54,6 +54,17 @@ Review `20261028115224_procurement_shortlists.sql` with the drawing-control migr
 
 The application does not apply migrations. A V0-only database is incompatible with drawing-revision and shortlist screens; do not publish a usable-workflow claim against it. On failure, preserve tables and ledger entries; restore the earlier application if appropriate and use a reviewed additive repair. Do not drop audit tables to roll back the UI.
 
+### Applied staging history and future migration tooling
+
+The user approved both exact files and B2B staging on 28 October 2026. Supabase's migration API applied them successfully and recorded its generated versions:
+
+| Repository file                             | Hosted version   | Hosted name              |
+| ------------------------------------------- | ---------------- | ------------------------ |
+| `20261028023900_rfq_drawing_revisions.sql`  | `20261028120807` | `rfq_drawing_revisions`  |
+| `20261028115224_procurement_shortlists.sql` | `20261028120816` | `procurement_shortlists` |
+
+The earlier V0 history remains `20261027182029`. Automatic approval review rejected rewriting the new history versions as outside the migration approval; provider-assigned history is preserved. Do not automatically run CLI push/pull/reset/repair against this project: compare migration names and exact SQL with this mapping first, and obtain explicit approval for any metadata reconciliation. Do not reapply these files merely because their repository timestamps differ. No business records were changed by the migrations. New environments still apply repository files in their existing order.
+
 ## First organization and staff
 
 An application admin is not a database administrator. No app role may create memberships or promote itself. Use the Supabase dashboard / trusted database operator for provisioning.

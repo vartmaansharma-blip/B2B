@@ -1,6 +1,7 @@
 import "server-only";
 import { requireStaff } from "@/features/auth/server";
 import { pageRange } from "@/lib/pagination";
+import { parseShortlistStatus } from "./shortlist-model";
 export async function getShortlist(
   rfqId: string,
   page: number,
@@ -43,9 +44,14 @@ export async function getShortlist(
     throw new Error(
       "Shortlist unavailable. Verify database migration before using this feature.",
     );
+  const shortlist = (entries.data ?? []).map((row) => {
+    const parsed = parseShortlistStatus(row);
+    if (!parsed) throw new Error("Shortlist status could not be verified.");
+    return parsed;
+  });
   const supplierIds = [
     ...new Set([
-      ...(entries.data ?? []).map((e) => e.supplier_id),
+      ...shortlist.map((e) => e.supplier_id),
       ...(candidates.data ?? []).map((c) => c.supplier_id),
     ]),
   ];
@@ -58,7 +64,7 @@ export async function getShortlist(
     : { data: [], error: null };
   if (suppliers.error) throw new Error("Supplier records unavailable.");
   return {
-    entries: entries.data ?? [],
+    entries: shortlist,
     count: entries.count ?? 0,
     candidates: candidates.data ?? [],
     candidateCount: candidates.count ?? 0,

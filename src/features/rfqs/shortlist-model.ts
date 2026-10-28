@@ -63,6 +63,34 @@ export function parseShortlistSnapshot(value: unknown) {
   return parsed.success ? parsed.data : null;
 }
 
+// Generated view columns are nullable; validate their table-derived invariants.
+const shortlistStatusSchema = z.object({
+  id: recordId,
+  organization_id: recordId,
+  rfq_id: recordId,
+  supplier_id: recordId,
+  capability_id: recordId,
+  requirements_version: z.number().int().positive(),
+  supplier_version: z.number().int().positive(),
+  version: z.number().int().positive(),
+  state: z.enum(["proposed", "accepted", "removed"]),
+  effective_state: z.enum(["proposed", "accepted", "removed", "needs_review"]),
+  review_note: z.string(),
+  fit_evidence_reference: z.string().nullable(),
+  requirements_snapshot: z.json(),
+  supplier_snapshot: z.json(),
+  reviewed_by: recordId.nullable(),
+  reviewed_at: z.string().nullable(),
+  rfq_reviewed_at: z.string().nullable(),
+  created_by: recordId,
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+export function parseShortlistStatus(value: unknown) {
+  const parsed = shortlistStatusSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+}
+
 export function effectiveShortlistState(
   entry: RfqShortlist,
   rfq: Rfq,
