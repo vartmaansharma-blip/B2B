@@ -2,6 +2,40 @@
 
 Local evidence, 28 October 2026 (IST). This is implementation verification, not supplier validation or release authorization.
 
+## Hosted acceptance audit and harness — 28 October 2026 (IST)
+
+This section supersedes older deployment and setup statements below. Hosted workflow acceptance is **PENDING APPROVAL**, not passed. No hosted account provisioning, business writes, migration, history repair, merge, deployment or email was performed in this task.
+
+The acceptance feature branch is `feat/hosted-shortlist-acceptance`, based on the designated publishing branch's exact `1a5cdbd89b56ca74c89aaea55f0451fa00df044f`. [Draft PR #4](https://github.com/vartmaansharma-blip/B2B/pull/4) targets `feat/procurement-shortlists`; `main` remains `dd26b88aa7f5d9dea3d1d3407d045bd8fbdbc981`. Application source, existing browser tests, ordinary CI and migration files are unchanged. No application failure was demonstrated, so no application fix was added.
+
+### Exact local evidence
+
+Harness commit **`42664deba45c3a25943be5f4e1e03633f1a66c96`**, supported Node **24.22.1**, sequential final run:
+
+| Check                                                                 | Result                                                                                                                        | Evidence boundary                                                                               |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `npm run check`                                                       | PASS: formatting, zero-warning lint, TypeScript, 134 tests and production build                                               | Local implementation/harness checks                                                             |
+| `npm run test`                                                        | PASS: 134 tests in 9 files                                                                                                    | Includes offline standalone planning and refusal of unapproved execution; no hosted credentials |
+| `npm run test:e2e`                                                    | PASS: 24 desktop/mobile Chromium checks after the build                                                                       | Existing local Auth/PostgREST protocol fixture and PGlite, not hosted Supabase                  |
+| Read-only schema attestation                                          | PASS: all 9 canonical private-function bodies, 9 RLS tables, caller-scoped shortlist view, zero anonymous/PUBLIC table grants | Live catalog inspection, not user-session workflow acceptance                                   |
+| Hosted synthetic role/workflow/cookie/refresh/expiry/revocation suite | NOT RUN                                                                                                                       | Requires exact synthetic-scope approval and private runtime credentials                         |
+
+Final documentation-only follow-up records these results; it does not change the tested harness. Remote GitHub CI is separate evidence and is linked from the PR.
+
+### Exact hosted target and preserved schema
+
+The protected branch review URL resolves to immutable deployment **`dpl_F5iygahkd48rWVsCdaxLrgcacpfA`**, READY Preview, region `bom1`, application SHA **`1a5cdbd89b56ca74c89aaea55f0451fa00df044f`**. Its immutable origin is [the pinned protected review deployment](https://b2b-manufacturing-qkte75fgr-vartmaansharma-blips-projects.vercel.app). This is the application under test; it does not contain the acceptance harness commit. The project retains Vercel sign-in protection for deployment URLs and all previews.
+
+B2B staging **`ywciamahpwefiuihlynw`** retains hosted versions **`20261027182029`**, **`20261028120807`**, **`20261028120816`** in the documented [repository-to-hosted mapping](environment.md#applied-staging-history-and-future-migration-tooling). Live whitespace-normalized private-function bodies match the last definitions in the canonical repository migrations. The catalog digest covering constraints, policies, grants, triggers and view definitions is **`58ff695506096cc872d7db59e436c398`**, observed **28 October 2026, 12:38:19 UTC / 18:08:19 IST**. Database timezone is UTC. A separate aggregate read found one existing organization and one membership, with zero suppliers/customers/RFQs. No existing identity or organization is used by this suite.
+
+The publishing audit found a **current GitHub connection** in Vercel's project API, superseding the historical manual-only deployment note. This branch adds only its exact branch name with `git.deploymentEnabled=false` in `vercel.json`, following [Vercel's documented branch exclusion](https://vercel.com/docs/project-configuration/git-configuration#git.deploymentenabled). Vercel returned zero acceptance-branch deployments after pushing and opening the PR. No project settings were changed.
+
+### Prepared scope and next approval
+
+[The opt-in procedure](hosted-acceptance.md) specifies four new synthetic password accounts, two new test organizations, two suppliers/capability observations, two customers, one RFQ and two shortlist entries, plus explicitly bounded denial probes and immutable events. Every evidence string disclaims real supplier/engineering claims. The exact generated private scope has SHA256 **`ba86d9649b8b0172210ef3c698b33251eaa2d8664900e06521a6e1492e4318fe`**. It is prepared but unapproved; its synthetic addresses, UUIDs and state stay outside this public repository. No credential or test export is attached.
+
+After scope approval, run provisioning and real Auth/PostgREST/protected-browser acceptance. Qualification expiry needs a second phase after the checkpoint's next UTC midnight (05:30 IST); the first phase explicitly reports expiry pending. Refresh the read-only schema attestation before each phase. After completion or a failed run, deactivate only the synthetic memberships and sign out their test sessions, preserving all ledger history. Hosted failures may justify focused feature-branch fixes; a fix cannot be claimed verified on this pinned older app deployment without separately authorized publishing.
+
 ## Current branch audit and procurement foundations — 28 October 2026 (IST)
 
 This section supersedes the repository/release status in the historical sections below. The referenced conversation's assistant answers were unavailable as plain text, so the implementation audit uses current source, GitHub and service inspection instead of inferred promises.
@@ -130,7 +164,7 @@ GitHub [run 40565605402](https://github.com/vartmaansharma-blip/B2B/actions/runs
 
 Vercel project `b2b-manufacturing-os` uses Node 22 and Mumbai functions. The first attempted preview was unexpectedly classified as Production and was canceled before serving. After the user separately approved a protected initial deployment, a bootstrap deployment completed without database configuration. The REST API rejects literal `target=preview`; an explicit non-production `staging` deployment then completed with Preview environment variables and the exact application commit above. Its build took approximately 51 seconds; the build-output step reported 42 seconds.
 
-The [protected staging deployment](https://b2b-manufacturing-4rmodgv6o-vartmaansharma-blips-projects.vercel.app/login) is READY. Its sign-in page was checked through authenticated HTTP and the real browser, including the illustration and credential form. Unauthenticated staff navigation redirects to login (307). The unique deployment URL requires Vercel login; the unintended public project alias was removed. No custom domain was connected, no merge occurred, and no customer records or qualified suppliers were inserted. The Git repository is not connected for automatic Vercel deployments; deployment remains explicit.
+The [protected staging deployment](https://b2b-manufacturing-4rmodgv6o-vartmaansharma-blips-projects.vercel.app/login) is READY. Its sign-in page was checked through authenticated HTTP and the real browser, including the illustration and credential form. Unauthenticated staff navigation redirects to login (307). The unique deployment URL requires Vercel login; the unintended public project alias was removed. No custom domain was connected, no merge occurred, and no customer records or qualified suppliers were inserted. At that historical staging step, the Git repository was not connected for automatic Vercel deployments. The current acceptance audit above confirms it is now connected.
 
 Public signup is disabled; password minimum is 12 characters, secure password change is enabled, and the exact staging origin/callback is configured without wildcards. The current Supabase Free dashboard requires custom SMTP or a plan upgrade to customize invite/recovery templates. No paid upgrade was selected and no incompatible invitation was sent. The owner subsequently created and confirmed the first Auth account directly in the dashboard; its active B2B admin membership has been provisioned and read back. The first sign-in is still pending: Auth logs report invalid credentials, so successful Auth/PostgREST signed-in flows remain unverified. No password was read, set, or changed by the agent. A later advisor scan, after account creation, reports leaked-password protection disabled; the current Free project marks that setting as Pro-only. No paid upgrade was selected. READY does not prove authenticated workflow acceptance. Keep real business intake disabled until the remaining integration checks above pass.
 
