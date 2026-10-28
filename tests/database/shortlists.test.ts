@@ -522,6 +522,65 @@ it("rejects stale edits, identity swaps, acceptance-scope changes and closed RFQ
   await expect(accept(proposed, p.rfq)).rejects.toThrow(/RFQ is closed/);
   await expect(propose(p)).rejects.toThrow(/RFQ is closed/);
 });
+it("records engineering rejection without erasing acceptance evidence and requires fresh review", async () => {
+  const f = await fixture();
+  const accepted = await accept(await propose(f), f.rfq);
+  const before = (
+    await asUser<ShortlistEvent>(
+      db,
+      ids.engineer,
+      "select * from public.shortlist_events where shortlist_id=$1 order by created_at,id",
+      [accepted.id],
+    )
+  ).rows;
+  const removed = (
+    await asUser<RfqShortlist>(
+      db,
+      ids.engineer,
+      "update public.rfq_shortlists set state='removed',review_note='SYNTHETIC engineering rejection' where id=$1 and version=$2 returning *",
+      [accepted.id, accepted.version],
+    )
+  ).rows[0];
+  expect(removed.state).toBe("removed");
+  expect(effectiveShortlistState(removed, f.rfq, f.supplier)).toBe("removed");
+  await expect(accept(removed, f.rfq)).rejects.toThrow(
+    /Propose before acceptance/,
+  );
+  const history = (
+    await asUser<ShortlistEvent>(
+      db,
+      ids.engineer,
+      "select * from public.shortlist_events where shortlist_id=$1 order by created_at,id",
+      [accepted.id],
+    )
+  ).rows;
+  expect(
+    history.filter((event) => before.some((old) => old.id === event.id)),
+  ).toEqual(before);
+  expect(
+    history.filter((event) => !before.some((old) => old.id === event.id)),
+  ).toMatchObject([
+    {
+      to_state: "removed",
+      actor_id: ids.engineer,
+      note: "SYNTHETIC engineering rejection",
+    },
+  ]);
+  const reproposed = (
+    await asUser<RfqShortlist>(
+      db,
+      ids.operator,
+      "update public.rfq_shortlists set state='proposed',review_note='SYNTHETIC reconsider after rejection' where id=$1 and version=$2 returning *",
+      [removed.id, removed.version],
+    )
+  ).rows[0];
+  expect(reproposed.reviewed_by).toBeNull();
+  expect(reproposed.fit_evidence_reference).toBeNull();
+  await expect(accept(reproposed, f.rfq, ids.engineer, " ")).rejects.toThrow(
+    /fit evidence/,
+  );
+  expect((await accept(reproposed, f.rfq)).state).toBe("accepted");
+});
 it("upgrades existing drawing-controlled RFQs without inventing shortlists or approvals", async () => {
   const legacy = await database("20261028023900_rfq_drawing_revisions.sql");
   try {
