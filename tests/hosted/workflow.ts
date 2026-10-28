@@ -335,6 +335,74 @@ export async function workflow(h: Hosted, step: Step, save: () => void) {
       );
       await effective(h, entry.id, "accepted");
     });
+    await step(
+      "engineer-rejection-and-fresh-evidence-after-reproposal",
+      async () => {
+        const before = await events(h, entry.id);
+        const rejection = `${note}; engineering fit rejected, remove from shortlist`;
+        const article = engineer.getByRole("article", { name, exact: true });
+        await article.getByLabel("Shortlist decision").selectOption("removed");
+        await article.getByLabel("Shortlist review reason").fill(rejection);
+        await article
+          .getByRole("button", { name: "Save shortlist review" })
+          .click();
+        await expect(
+          article.getByText("removed", { exact: true }),
+        ).toBeVisible();
+        entry = await one(h, "rfq_shortlists", entry.id);
+        await effective(h, entry.id, "removed");
+        const after = await events(h, entry.id);
+        ensure(
+          hash(
+            after.filter((event) => before.some((old) => old.id === event.id)),
+          ) === hash(before),
+          "Rejection changed earlier evidence",
+        );
+        const decision = after.filter(
+          (event) => !before.some((old) => old.id === event.id),
+        );
+        ensure(
+          decision.length === 1 &&
+            decision[0].to_state === "removed" &&
+            decision[0].actor_id === h.state.accounts.engineer!.id &&
+            decision[0].note === rejection,
+          "Engineering rejection audit missing",
+        );
+        denied(
+          await h.api(
+            "engineer",
+            "rfq_shortlists",
+            "PATCH",
+            acceptance(rfq),
+            byId(entry.id),
+          ),
+          ["23514"],
+        );
+        entry = await repropose(h, entry, supplier, rfq);
+        ensure(
+          entry.reviewed_by === null && entry.fit_evidence_reference === null,
+          "Reproposal retained acceptance authority",
+        );
+        denied(
+          await h.api(
+            "engineer",
+            "rfq_shortlists",
+            "PATCH",
+            { ...acceptance(rfq), fit_evidence_reference: " " },
+            byId(entry.id),
+          ),
+          ["23514"],
+        );
+        entry = await h.patch(
+          "engineer",
+          "rfq_shortlists",
+          entry.id,
+          acceptance(rfq),
+          entry.version,
+        );
+        await effective(h, entry.id, "accepted");
+      },
+    );
     const originalEvents = await events(h, entry.id);
     const stalePage = await engineer.context().newPage();
     await stalePage.goto(`${h.scope.origin}/rfqs/${rfq.id}/shortlist`);

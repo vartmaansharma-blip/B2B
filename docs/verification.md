@@ -2,6 +2,16 @@
 
 Local evidence, 28 October 2026 (IST). This is implementation verification, not supplier validation or release authorization.
 
+## Hosted acceptance preparation refresh — 28 October 2026 (IST)
+
+The owner requested review of PR #3/#4 and explicit scope approval before hosted provisioning. Both PRs are still draft/unmerged, with no submitted reviews. PR #3 remains `1a5cdbd89b56ca74c89aaea55f0451fa00df044f`; its [current-head CI](https://github.com/vartmaansharma-blip/B2B/actions/runs/40686795687) completed successfully, including check/build/browser steps. PR #4's previous head `830add88768522b9bd2bb75f1ecbd7eab59595f0` also passed [all CI steps](https://github.com/vartmaansharma-blip/B2B/actions/runs/40690571974). The new acceptance-only follow-up is tracked by the current [PR #4 checks](https://github.com/vartmaansharma-blip/B2B/pull/4/checks).
+
+Read-only hosted inspection at **12:54:36 UTC / 18:24:36 IST** reconfirmed the pinned protected Preview and application SHA recorded below, all nine canonical private function bodies, nine RLS tables, caller-scoped view, no anonymous/PUBLIC grants, the unchanged migration mapping and catalog digest `58ff695506096cc872d7db59e436c398`. All five business registers (supplier, customer, RFQ, capability, shortlist) remain empty. The private two-organization/four-account scope retains its original digest, secure external files and empty account/provisioning state. No private identifiers, addresses, credentials or exports are reproduced here. Vercel returned zero acceptance-branch deployments; its branch exclusion remains in place.
+
+The review found a coverage gap: the hosted harness tested denied removals, but not a successful engineer rejection. The existing suite now exercises the existing `removed` decision through the protected UI, checks its engineer-authored immutable event, refuses direct reacceptance, clears old evidence/attribution on reproposal, and requires fresh fit evidence. A regression test executes those transitions against the canonical migrations in PGlite. This changes no app module, database schema, data quota or workflow state. It does not establish a hosted defect or hosted PASS.
+
+Local verification for this follow-up on supported Node **24.22.1**: `npm run check` PASS with **135 tests** and production build; separate `npm run test` PASS with **135 tests**; subsequent `npm run test:e2e` PASS with **24 desktop/mobile Chromium checks**. Ordinary CI remains credential-free. Hosted provisioning, workflow, expiry and cleanup remain **NOT RUN / AWAITING EXPLICIT SCOPE APPROVAL**. Both PRs may receive code review, but neither is accepted for merge on hosted evidence. Full acceptance requires the real expiry phase and cleanup to succeed.
+
 ## Hosted acceptance audit and harness — 28 October 2026 (IST)
 
 This section supersedes older deployment and setup statements below. Hosted workflow acceptance is **PENDING APPROVAL**, not passed. No hosted account provisioning, business writes, migration, history repair, merge, deployment or email was performed in this task.
